@@ -8,20 +8,31 @@ const {
 const GITHUB_REGEX_MATCH = /https:\/\/github.com\/.*?\/(.*)?.git/;
 const GITIGNORE_NODE_MODULES_REGEX_MATCH = /.*node_modules.*/;
 
-const [,,gitRepoUrl] = process.argv;
+// Possible options:
+// --commit: Will commit the project when everything has been ran and data has been added.
+// --hs: Will start hs server once everythign is complete (will wait for grunt if grunt is also running)
+// --grunt: Will run grunt once.
+// Example: pleaseSetupGit [url] --grunt --hs
+// Example: pleaseSetupGit [url] --commit
+const [,,gitRepoUrl, ...options] = process.argv;
+
 const gitUrlMatch = GITHUB_REGEX_MATCH.exec(gitRepoUrl);
 
 let hasDataBeenAdded = false;
+
+let shouldStartHsServer = false;
+let shouldCommit = false;
 
 if (gitUrlMatch !== null) {
     try {
         const [, repoName] = gitUrlMatch;
         const baseFilePath = `./${repoName}`;
         
-        const execute = (code, consoleMessage) => {
+        const execute = (code, consoleMessage, logBeforeRun = false) => {
+            if(logBeforeRun) console.log(consoleMessage);
             execSync(code);
-            console.log(consoleMessage);
-        };
+            if(!logBeforeRun) console.log(consoleMessage);
+        };  
 
         const appendToFile = (fileName, data, consoleMessage) => {
             try {
@@ -31,7 +42,7 @@ if (gitUrlMatch !== null) {
                 console.log('Error:', message);
             }
         };
-        
+
         const doesFileExists = fileName => existsSync(`${baseFilePath}/${fileName}`);
 
         execute(`git clone ${gitRepoUrl}`, "Cloned repo");
@@ -63,13 +74,17 @@ if (gitUrlMatch !== null) {
             execute(`cd ${repoName}/ && npm install`, `Ran: npm install`);
         }
         
-        if (hasDataBeenAdded) {
+        if (hasDataBeenAdded && options.includes("--commit")) {
             execute(`cd ${repoName}/ && git add . && git commit -m "Initital Commit"`, `Commited to ${repoName}`);
+        }
+
+        if(options.includes("--hs")){
+            execute(`cd ${repoName}/ && hs`, 'Started http server', true);
         }
 
     } catch ({message}) {
         console.log('Error:', message);
     }
 } else {
-    console.log('Usage: doGitForMe [gitUrl]');
+    console.log('Usage: doGitForMe [gitUrl] [options:  --commit, --grunt, --hs]');
 }
