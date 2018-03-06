@@ -8,22 +8,22 @@ Possible options:
 */
 
 const { existsSync } = require('fs');
-const { execSync } = require('child_process');
+const { appendToFile } = require('./appendToFile');
+const { execute } = require('./execute');
+const removeWatch = require(`./transforms/removeWatch.js`);
 const {
     appendFileSync,
     readFileSync,
     createReadStream,
     createWriteStream,
-    writeFile
-} = require("fs")
+    writeFileSync
+} = require("fs");
 
-const { Transform, Writable } = require("stream");
-const removeWatch = Transform();
+const { Writable } = require("stream");
 const writeToGruntfile = Writable();
 
 const GITHUB_REGEX_MATCH = /https:\/\/github.com\/.*?\/(.*)?.git/;
 const GITIGNORE_NODE_MODULES_REGEX_MATCH = /.*node_modules.*/;
-const GRUNTFILE_WATCH_REGEX_MATCH = /(grunt\.registerTask\(.*\[.*?)(\,\s'watch')(.*?\]\))/;
 
 const {argv: [,,gitRepoUrl, ...options]} = process;
 
@@ -36,44 +36,12 @@ let hasDataBeenAdded = false;
 if (gitUrlMatch !== null) {
     try {
         const [, repoName] = gitUrlMatch;
-        const baseFilePath = `./${repoName}`;
-        
-        // Sifts through the buffer and removes the 'watch' statment from grunt.registerTask
-        removeWatch._transform = (buffer, _, callback) => {
-            try {
-                const bufferWithoutWatch = buffer.toString().replace(GRUNTFILE_WATCH_REGEX_MATCH, "$1$3");
-                callback(null, bufferWithoutWatch);
-            } catch ({message}) {
-                console.log('Error:', message);
-            }
-        }
+        const baseFilePath = `./${repoName}`;      
 
         writeToGruntfile._write = (buffer, _, next) => {
             try {
-                writeFile(`${baseFilePath}/Gruntfile.js`, buffer, (err) => {
-                    if(err) throw err;
-                });
+                writeFileSync(`${baseFilePath}/Gruntfile.js`, buffer);
                 next();
-            } catch ({message}) {
-                console.log('Error:', message);
-            }
-        };
-
-        const execute = (code, consoleMessage) => {
-            try {
-                console.log("Running: ", consoleMessage);
-                execSync(code);
-                console.log("Finished: ", consoleMessage);
-            } catch ({message}) {
-                console.log('Error:', message);
-            }
-        };  
-
-        const appendToFile = (fileName, data, consoleMessage) => {
-            try {
-                console.log("Running: ", consoleMessage);
-                appendFileSync(`${baseFilePath}/${fileName}`, `${data}`, 'utf8');
-                console.log("Finished: ", consoleMessage);
             } catch ({message}) {
                 console.log('Error:', message);
             }
@@ -91,43 +59,43 @@ if (gitUrlMatch !== null) {
         // If git ignore does not have node_modules in it.
         const gitIgnoreContents = readFileSync(`${baseFilePath}/.gitignore`, 'utf8').toString();
         if (gitIgnoreContents.match(GITIGNORE_NODE_MODULES_REGEX_MATCH) === null) {           
-            appendToFile(`.gitignore`, '\nnode_modules', `Append node_modules to .gitignore`);
+            appendToFile(`${baseFilePath}/.gitignore`, '\nnode_modules', `Append node_modules to .gitignore`);
         }
 
         // Check if readme exists, if it does not, create it and add the repo name to it.
         if (!doesFileExist(`README.md`)) {
             hasDataBeenAdded = true;
             execute(`touch ${baseFilePath}/README.md`, 'Creat README.md');
-            appendToFile(`README.md`,  `#${repoName}`, `Append repo name to README.md`);
+            appendToFile(`${baseFilePath}/README.md`,  `#${repoName}`, `Append repo name to README.md`);
         }
 
-        if (!doesFileExist(`${baseFilePath}/package.json`) && !doesFileExist(`${baseFilePath}/package-lock.json`) ) {
+        // package.json and package-lock.json
+        if (!doesFileExist(`package.json`) && !doesFileExist(`package-lock.json`) ) {
             hasDataBeenAdded = true;
             execute(`cd ${repoName}/ && npm init -y`, `npm init -y`);
         }
 
-        if (!doesFileExist(`${baseFilePath}/node_modules`)) {
-            execute(`cd ${repoName}/ && npm install`, `npm install`);
+        // node_modules
+        if (!doesFileExist(`node_modules`)) {
+            execute(`cd ${baseFilePath}/ && npm install`, `npm install`);
         }
         
+        // commit
         if (hasDataBeenAdded && isOptionOn("--commit")) {
-            execute(`cd ${repoName}/ && git add . && git commit -m "Initital Commit"`, `Commit to ${repoName}`);
+            execute(`cd ${baseFilePath}/ && git add . && git commit -m "Initital Commit"`, `Commit to ${repoName}`);
         }
 
-        //TODO:
-        // Run through gruntfile, remove watch from
-        //    grunt.registerTask("default", ['jshint', 'sass', 'browserify', 'watch']);//Will do by default when you excecute grunt.
-        // write that back
-
+        // grunt
         if(isOptionOn("--grunt")){
             try {
                 createReadStream(`${baseFilePath}/Gruntfile.js`)
-                .pipe(removeWatch)
+                .pipe(removeWatch())
                 .pipe(writeToGruntfile)
                 .on('finish', () => {
 
                     execute(`cd ${repoName}/ && grunt --force`, 'grunt', true);
-
+                    
+                    // If hs is set to true, now run hs after running grunt.
                     if(isOptionOn("--hs")){
                         execute(`cd ${repoName}/ && hs`, 'http server', true);
                     }
@@ -139,7 +107,8 @@ if (gitUrlMatch !== null) {
             }
         }
 
-        // Wait for grunt fo finish running then do its thing
+        // Run hs if grunt is not an option
+        // hs
         if(isOptionOn("--hs") && !isOptionOn("--grunt")){
             execute(`cd ${repoName}/ && hs`, 'Started http server', true);
         }
