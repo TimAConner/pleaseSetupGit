@@ -29,9 +29,13 @@ if (gitUrlMatch !== null) {
         const baseFilePath = `./${repoName}`;
         
         const execute = (code, consoleMessage, logBeforeRun = false) => {
-            if(logBeforeRun) console.log(consoleMessage);
-            execSync(code);
-            if(!logBeforeRun) console.log(consoleMessage);
+            try {
+                if(logBeforeRun) console.log(consoleMessage);
+                execSync(code);
+                if(!logBeforeRun) console.log(consoleMessage);
+            } catch ({message}) {
+                console.log('Error:', message);
+            }
         };  
 
         const appendToFile = (fileName, data, consoleMessage) => {
