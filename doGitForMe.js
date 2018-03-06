@@ -16,12 +16,11 @@ const GITIGNORE_NODE_MODULES_REGEX_MATCH = /.*node_modules.*/;
 // Example: pleaseSetupGit [url] --commit
 const [,,gitRepoUrl, ...options] = process.argv;
 
+const isOptionOn = option => options.includes(option);
+
 const gitUrlMatch = GITHUB_REGEX_MATCH.exec(gitRepoUrl);
 
 let hasDataBeenAdded = false;
-
-let shouldStartHsServer = false;
-let shouldCommit = false;
 
 if (gitUrlMatch !== null) {
     try {
@@ -78,13 +77,19 @@ if (gitUrlMatch !== null) {
             execute(`cd ${repoName}/ && npm install`, `Ran: npm install`);
         }
         
-        if (hasDataBeenAdded && options.includes("--commit")) {
+        if (hasDataBeenAdded && isOptionOn("--commit")) {
             execute(`cd ${repoName}/ && git add . && git commit -m "Initital Commit"`, `Commited to ${repoName}`);
         }
 
-        if(options.includes("--hs")){
+        if(isOptionOn("--hs")){
             execute(`cd ${repoName}/ && hs`, 'Started http server', true);
         }
+
+
+        //TODO:
+        // Run through gruntfile, remove watch from
+        //    grunt.registerTask("default", ['jshint', 'sass', 'browserify', 'watch']);//Will do by default when you excecute grunt.
+        // write that back
 
     } catch ({message}) {
         console.log('Error:', message);
