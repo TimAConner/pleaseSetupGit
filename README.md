@@ -24,7 +24,7 @@ pleaseSetupGit <Repo URL> [--grunt --commit [--hs [--hs && --o]]]
     * Will commit if data has been changed after you npm init and install.
     * Commit message is "Initial Commit"
 
-## Order of Operationsn
+## Order of Operations
 When pleaseSetupGit runs, this is the order of things that happen.
 1. git clone
 1. Create .gitignore if not present
