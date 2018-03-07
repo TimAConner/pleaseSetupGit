@@ -1,6 +1,6 @@
 {
   "name": "please-setup-git",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A quick way to setup a new repository from GitHub or clone one down for testing.",
   "main": "index.js",
   "scripts": {
