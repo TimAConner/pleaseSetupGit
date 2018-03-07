@@ -1,8 +1,8 @@
 # pleaseSetupGit
 ## Motivation
-While attending the [Nashville Software School](http://nashvillesoftwareschool.com/), there was an optional challenge to build a command line application that would automatically pull down a github repo.  After finishing that, Emily Lemmon, the class' Junior Instructor, had the idea to turn it into an application that would help them test students repos.  
+While attending the [Nashville Software School](http://nashvillesoftwareschool.com/), there was an optional challenge to build a command line application that would automatically pull down a GitHub repository.  After finishing that, Emily Lemmon, the class' Junior Instructor, had the idea to turn it into an application that would help her and the TAs test student's repositories.  
 ## Purpose
-One can quickly clown down a new or old repo and be up and ready to work in the span of one command.
+One can quickly clown down, (and npm init, install, etc.) a new or old repo and be up and ready to work in the span of one command.
 ## How to Setup
 1. npm install -g
 1. You're ready to rock!
@@ -25,15 +25,15 @@ pleaseSetupGit <Repo URL> [--grunt --commit [--hs [--hs && --o]]]
     * Commit message is "Initial Commit"
 
 ## Order of Operations
-When pleaseSetupGit runs, this is the order of things that happen.
-1. git clone
+When pleaseSetupGit runs, this is the order that it checks and executes what to do:
+1. Run git clone
 1. Create .gitignore if not present
     1. Add node_modules to .gitignore 
 1. Create README.md if not present
     1. Add # README NAME to readme file.
 1. Run npm init -y if package or package-lock are not present
 1. Run npm install if node_modules is not present
-1. Run git commit if data has been added to the repo in the previous steps and if --commit option has been added.
-1. Run grunt if --grunt command has been added.
+1. Run git commit if data has been added to the repo in the previous steps and if --commit option has been added as an option.
+1. Run grunt if --grunt command has been added as an option.
     1. When grunt is complete, it will run --hs if that has been added as an option.
 1. Run hs if --hs command has been added and grunt is complete.
