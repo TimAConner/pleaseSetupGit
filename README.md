@@ -4,8 +4,7 @@ While attending the [Nashville Software School](http://nashvillesoftwareschool.c
 ## Purpose
 One can quickly clone down a new or old repository using pleaseSetupGit.  This modules will automatically setup README.md, setup .gitignore, add node_modules to git ignore, run npm init -y, run npm install, run grunt, and start the http server.  You'll be up and ready to work in the span of one command!  (Or two, because there's always  *one* person who just has to have more than grunt and http server running.)
 ## How to Setup
-1. Clone down this project
-1. npm install -g
+1. npm install pleaseSetupGit -g
 1. You're ready to rock!
 
 ## How to Use
@@ -31,7 +30,7 @@ When pleaseSetupGit runs, this is the order that it checks and executes what to 
 1. Create .gitignore if not present
     1. Add node_modules to .gitignore 
 1. Create README.md if not present
-    1. Add # README NAME to readme file.
+    1. Add # repo-name to readme file.
 1. Run npm init -y if package or package-lock are not present
 1. Run npm install if node_modules is not present
 1. Run git commit if data has been added to the repo in the previous steps and if --commit option has been added as an option.
