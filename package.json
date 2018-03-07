@@ -1,7 +1,7 @@
 {
-  "name": "pleaseSetupGit",
+  "name": "please-setup-git",
   "version": "1.0.0",
-  "description": "",
+  "description": "A quick way to setup a new repository from GitHub or clone one down for testing.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -14,7 +14,7 @@
     "url": "git+https://github.com/TimAConner/pleaseSetupGit.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "Tim A. Conner",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/TimAConner/pleaseSetupGit/issues"
